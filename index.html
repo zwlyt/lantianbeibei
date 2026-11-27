@@ -183,6 +183,8 @@ button{font-family:inherit}
 .row-en{font-family:var(--serif);font-size:17px;letter-spacing:.2px;color:var(--ink);word-break:break-word;line-height:1.4}
 .row-zh{font-size:13.5px;color:var(--muted);margin-top:2px;word-break:break-word;line-height:1.45}
 .tags{display:flex;gap:5px;flex:none}
+.chev{flex:none;color:#BDB8A8;font-size:17px;line-height:1;padding-left:2px;transition:.12s}
+.row:hover .chev{color:var(--accent)}
 .tag{font-size:10.5px;padding:2px 7px;border-radius:20px;letter-spacing:.4px;white-space:nowrap}
 .tag.w{background:var(--wrong-bg);color:var(--wrong)}
 .tag.s{background:var(--soft);color:var(--accent)}
@@ -986,10 +988,11 @@ button{font-family:inherit}
       var tags = '';
       if(e.lastWrong) tags += '<span class="tag w">错题</span>';
       else if(e.streak >= 2) tags += '<span class="tag s">连对 ' + e.streak + '</span>';
-      return '<div class="row" data-act="edit" data-id="' + e.id + '">' +
+      return '<div class="row" data-act="edit" data-id="' + e.id + '" role="button" aria-label="编辑 ' + esc(e.en) + '">' +
         '<div class="row-main"><div class="row-en">' + esc(e.en) + '</div>' +
         '<div class="row-zh">' + senseLinesHTML(e) + '</div></div>' +
-        '<div class="tags">' + tags + '</div></div>';
+        '<div class="tags">' + tags + '</div>' +
+        '<span class="chev" aria-hidden="true">›</span></div>';
     }).join('') + '</div>';
   }
 
@@ -1211,7 +1214,8 @@ button{font-family:inherit}
         '<div id="editor-body">' + editorBodyHTML(ed) + '</div>' +
         '<p class="tip">同一个框里多种说法用 / 隔开，如「火车/列车/队列」，答对任意一种都算对。</p>' +
         '<div class="sheet-actions">' +
-          (isEdit ? '<button class="btn ghost danger" data-act="delEntry">删除</button>' : '') +
+          (isEdit ? '<button class="btn ghost danger" data-act="delEntry">删除</button>' +
+                    '<button class="btn ghost" data-act="speakType">朗读</button>' : '') +
           '<button class="btn" data-act="saveEntry">保存</button>' +
         '</div></div>';
     } else if(S.modal.type === 'batch'){
@@ -1976,6 +1980,17 @@ button{font-family:inherit}
       case 'speak':
         speak();
         break;
+      case 'speakType': {
+        var seEl = document.getElementById('f-en');
+        var seTxt = seEl ? seEl.value.trim() : '';
+        if(!seTxt){
+          var seEntry = (S.modal && S.modal.eid) ? findEntry(S.modal.eid) : null;
+          seTxt = seEntry ? seEntry.en : '';
+        }
+        if(!seTxt){ toast('先填英文再朗读'); break; }
+        speak(seTxt);
+        break;
+      }
       case 'hint':
         if(val === 'toggle') store.settings.hint = !store.settings.hint;
         else store.settings.hint = true;
