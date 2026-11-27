@@ -9,9 +9,10 @@
 <title>蓝天贝贝 · 背单词</title>
 <style>
 :root{
-  --bg:#F4F2EB; --card:#FFFFFF; --ink:#1F242A; --muted:#767771; --line:#E5E0D3;
+  --bg:#F4F2EB; --card:#FFFFFF; --ink:#1F242A; --muted:#66675F; --line:#E5E0D3;
   --accent:#0F6B58; --accent-d:#0A4F42; --soft:#E8F1ED;
-  --right:#1C7444; --right-bg:#EDF7F0; --wrong:#AE3D2C; --wrong-bg:#FBEFEA;
+  --blue:#2E6FB7; --blue-soft:#EAF1FA; --blue-ink:#25517F;
+  --right:#1E7A4F; --right-bg:#EAF5EE; --wrong:#C0392B; --wrong-bg:#FBEDEA;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Courier New",monospace;
 }
@@ -43,7 +44,7 @@ button{font-family:inherit}
 .card + .card{margin-top:14px}
 .eyebrow{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin:0 0 9px}
 .eyebrow.sp{margin-top:20px}
-.hint{font-size:12.5px;color:var(--muted);margin:9px 0 0;line-height:1.65}
+.hint{font-size:13px;color:var(--muted);margin:9px 0 0;line-height:1.65}
 .muted{color:var(--muted)}
 
 /* ---------- 分段控件 ---------- */
@@ -66,9 +67,26 @@ button{font-family:inherit}
 .icon{width:36px;height:36px;padding:0;display:grid;place-items:center;background:none;border:0;color:var(--muted);cursor:pointer;border-radius:8px;flex:none}
 .icon:active{background:#F2EFE7}
 
+/* ---------- 交互反馈（悬停 / 键盘焦点） ---------- */
+.btn:hover{background:var(--accent-d)}
+.btn.ghost:hover{background:#F7F5EF;border-color:#D8D2C2}
+.btn.danger:hover{background:#FDF3EF}
+.mini:hover{background:#F7F5EF}
+.icon:hover{background:#F2EFE7}
+.seg button:hover{color:var(--ink)}
+.posgrid button:hover{border-color:#D8D2C2;background:#FBF9F3}
+.row:hover,.wrow:hover,.readrow:hover{background:#F8F6EF}
+.tabbar button:hover{color:var(--ink)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (hover:none){
+  .btn:hover{background:var(--accent)}
+  .btn.ghost:hover{background:#fff;border-color:var(--line)}
+  .row:hover,.wrow:hover,.readrow:hover{background:transparent}
+}
+
 /* ---------- 练习：出题卡 ---------- */
-.prog{height:3px;background:#E5E0D3;border-radius:3px;overflow:hidden;margin-bottom:16px}
-.prog i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.prog{height:4px;background:#EDE9DE;border-radius:4px;overflow:hidden;margin-bottom:16px}
+.prog i{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .3s}
 .qmeta{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:14px;letter-spacing:.5px}
 .head{font-size:38px;line-height:1.28;letter-spacing:.2px;font-family:var(--serif);word-break:break-word;margin:2px 0 4px}
 .head.zh{font-size:27px;line-height:1.5;font-family:inherit;font-weight:600;letter-spacing:0}
@@ -84,15 +102,15 @@ button{font-family:inherit}
 
 /* ---------- 词性 ---------- */
 .posrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.postag{display:inline-block;font-size:11.5px;line-height:1.6;letter-spacing:.4px;color:var(--accent);
-  background:var(--soft);padding:2px 8px;border-radius:20px;font-family:var(--mono)}
+.postag{display:inline-block;font-size:11.5px;line-height:1.6;letter-spacing:.4px;color:var(--blue-ink);
+  background:var(--blue-soft);padding:2px 8px;border-radius:20px;font-family:var(--mono)}
 .postag.mini{font-size:10.5px;padding:1px 6px;margin-left:6px;vertical-align:1px}
 .fb .posrow{margin-top:6px;margin-bottom:2px}
 .fb .postag{background:rgba(255,255,255,.72);color:inherit;border:1px solid rgba(0,0,0,.05)}
 .zl{display:flex;align-items:baseline;gap:7px;margin:3px 0;min-width:0}
 .zt{min-width:0;word-break:break-word}
 .row-zh .zl{margin:1px 0;gap:5px}
-.row-zh .postag{font-size:10px;padding:1px 5px;background:#EEF2EE;color:var(--accent)}
+.row-zh .postag{font-size:10px;padding:1px 5px;background:var(--blue-soft);color:var(--blue-ink)}
 .qt{margin-top:14px;padding:12px 14px;background:#F4F2EB;border:1px solid var(--line);border-radius:10px;
   font-size:17px;font-weight:600;line-height:1.45;word-break:break-word}
 .fb .zl{margin:4px 0;gap:6px}
@@ -130,8 +148,9 @@ button{font-family:inherit}
 
 /* 练习页纵向分配：卡片在上，数据页脚贴底 */
 .pf{min-height:calc(100dvh - 200px);display:flex;flex-direction:column}
+.pf.top{min-height:0}
 .pf.center{justify-content:center}
-.foot{margin-top:auto;border-top:1px solid var(--line);padding:13px 2px 2px;display:flex;justify-content:space-between;
+.foot{margin-top:auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 14px;display:flex;justify-content:space-between;
   gap:12px;font-size:12px;color:var(--muted);letter-spacing:.4px}
 .foot b{color:var(--ink);font-weight:600;font-family:var(--serif);font-size:13.5px}
 @media (max-height:560px){ .pf{min-height:auto} }
@@ -162,7 +181,7 @@ button{font-family:inherit}
 .row:active{background:#F8F6EF}
 .row-main{flex:1;min-width:0}
 .row-en{font-family:var(--serif);font-size:17px;letter-spacing:.2px;color:var(--ink);word-break:break-word;line-height:1.4}
-.row-zh{font-size:13px;color:var(--muted);margin-top:2px;word-break:break-word;line-height:1.45}
+.row-zh{font-size:13.5px;color:var(--muted);margin-top:2px;word-break:break-word;line-height:1.45}
 .tags{display:flex;gap:5px;flex:none}
 .tag{font-size:10.5px;padding:2px 7px;border-radius:20px;letter-spacing:.4px;white-space:nowrap}
 .tag.w{background:var(--wrong-bg);color:var(--wrong)}
@@ -175,9 +194,10 @@ button{font-family:inherit}
 .libbar{display:flex;gap:10px;margin-bottom:14px}
 .libbar .btn{flex:1;min-height:44px;padding:10px 12px;font-size:14px}
 .statrow{display:flex;gap:8px;margin-bottom:14px}
-.statrow div{flex:1;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 12px}
-.statrow .num{font-family:var(--serif);font-size:24px;line-height:1.1;letter-spacing:.5px}
-.statrow .lab{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.5px}
+.statrow > div{flex:1;min-width:0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+  display:flex;align-items:baseline;gap:7px}
+.statrow .num{font-family:var(--serif);font-size:26px;line-height:1;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.statrow .lab{font-size:11.5px;color:var(--muted);margin:0;letter-spacing:.5px;white-space:nowrap}
 
 /* ---------- 设置 ---------- */
 .set-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-bottom:1px solid #F0EDE4}
@@ -201,7 +221,7 @@ button{font-family:inherit}
 
 /* ---------- 写作 ---------- */
 .wbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-.wlist{background:#fff;border:1px solid var(--line);border-radius:14px;overflow-y:auto;max-height:288px}
+.wlist{background:#fff;border:1px solid var(--line);border-radius:14px;overflow-y:auto;max-height:min(52vh,420px)}
 .wrow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #F0EDE4;cursor:pointer;transition:.12s}
 .wrow:last-child{border-bottom:0}
 .wrow:active{background:#F8F6EF}
@@ -475,7 +495,7 @@ button{font-family:inherit}
       return '<div class="sense-row">' +
         '<span class="sense-pos">' + esc(sn.pos || '·') + '</span>' +
         '<input class="' + cls + '" id="' + senseInputId(i) + '" data-si="' + i + '" type="text" placeholder="' +
-          esc((sn.pos ? posLabel(sn.pos) : '这层意思') + '的中文') + '" value="' + esc(val) + '" autocomplete="off" autocapitalize="none" spellcheck="false"' +
+          esc('写这层的中文意思') + '" value="' + esc(val) + '" autocomplete="off" autocapitalize="none" spellcheck="false"' +
           (s.checked ? ' disabled' : '') + '>' +
         (s.checked ? '<span class="sense-flag">' + (isMatch(val, sn.zh) ? '✓' : '✗') + '</span>' : '') +
       '</div>';
@@ -686,7 +706,11 @@ button{font-family:inherit}
     var rate = done ? Math.round(l.right / done * 100) + '%' : '—';
     var wrongN = store.entries.filter(function(e){ return e.lastWrong; }).length;
     if(!S.session){
-      return '<div class="foot"><span>今日 <b>' + done + '</b> 题 · 正确率 <b>' + rate + '</b></span><span>错题 <b>' + wrongN + '</b> 个</span></div>';
+      return '<div class="statrow" style="margin-top:18px">' +
+        '<div><span class="num">' + done + '</span><span class="lab">今日题数</span></div>' +
+        '<div><span class="num">' + (done ? rate : '—') + '</span><span class="lab">正确率</span></div>' +
+        '<div><span class="num" style="color:var(--wrong)">' + wrongN + '</span><span class="lab">错题</span></div>' +
+      '</div>';
     }
     var s = S.session;
     return '<div class="foot"><span>本轮 对 <b>' + s.right + '</b> · 错 <b>' + s.wrong + '</b></span>' +
@@ -796,7 +820,8 @@ button{font-family:inherit}
         actions = '<div class="actions">' +
           '<button class="btn ghost" data-act="giveup">不会，看答案</button>' +
           '<button class="btn" data-act="check">检查</button>' +
-          '</div>';
+          '</div>' +
+          '<p class="sp-tip">回车键 = 检查 · 答完按空格进入下一题</p>';
       }
     } else if(s.ok){
       actions = '<div class="actions"><button class="btn" data-act="next">' + (i+1 >= n ? '看结果（空格）' : '下一个（空格）') + '</button>' +
@@ -817,7 +842,7 @@ button{font-family:inherit}
 
   function renderPractice(){
     var v = $('#view');
-    if(!S.session){ v.innerHTML = '<div class="pf">' + setupHTML() + footHTML() + '</div>'; return; }
+    if(!S.session){ v.innerHTML = '<div class="pf top">' + setupHTML() + footHTML() + '</div>'; return; }
     if(S.session.done){ v.innerHTML = '<div class="pf center">' + summaryHTML() + '</div>'; return; }
     var e = cur();
     if(!e){ S.session.done = true; v.innerHTML = '<div class="pf center">' + summaryHTML() + '</div>'; return; }
