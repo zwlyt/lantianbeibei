@@ -354,6 +354,12 @@ button{font-family:inherit}
   .clock .t{font-family:var(--serif);font-size:32px;line-height:1.1;letter-spacing:.5px}
   .clock .d{font-size:11.5px;color:var(--muted);text-align:right;line-height:1.6}
   .clock .d b{display:block;color:var(--ink);font-weight:600}
+  .wx{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+  .wx .wicon{font-size:15px;line-height:1}
+  .wx .wt{font-family:var(--serif);font-size:21px;line-height:1;color:var(--ink)}
+  .wx .warea{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:112px}
+  .wx .wf{margin-left:auto}
   .trio{display:flex;gap:8px}
   .trio > div{flex:1;min-width:0}
   .trio .n{font-family:var(--serif);font-size:24px;line-height:1.2;font-variant-numeric:tabular-nums}
@@ -632,6 +638,7 @@ button{font-family:inherit}
     };
   }).filter(function(e){ return e.en && e.zh; });
   store.settings = Object.assign({ count: 0, hint: false }, store.settings || {});
+  store.settings.city = String(store.settings.city || '');
   store.settings.ai = Object.assign({ mode: 'free', url: '', tok: '', model: '', key: '' }, store.settings.ai || {});
   store.log = Object.assign({ date: '', right: 0, wrong: 0 }, store.log || {});
   store.reads = Array.isArray(store.reads) ? store.reads : [];
@@ -835,6 +842,89 @@ button{font-family:inherit}
     return '<div class="hist">' + out.join('') + '</div><div class="hist-l">' + labs.join('') + '</div>' +
       '<p class="hist-note">近 7 天正确率 · 柱高就是当天正确率，没有答题的日子是空柱</p>';
   }
+
+  /* ---------- 天气：wttr.in（免 key、允许跨域）；取不到就整块不显示 ---------- */
+  var WX_KEY = 'wordcard.wx.v1';
+  var WX = { data: null, at: 0, city: '', err: false };
+  function wxCity(){
+    return String((store.settings && store.settings.city) || '').trim() || '萍乡';
+  }
+  function wxCodeInfo(code, desc){
+    var c = Number(code), d = String(desc || '').toLowerCase();
+    if(c === 113) return { e: '☀️', t: '晴' };
+    if(c === 116) return { e: '⛅', t: '多云' };
+    if(c === 119 || c === 122) return { e: '☁️', t: '阴' };
+    if(c === 143 || c === 248 || c === 260) return { e: '🌫️', t: '雾' };
+    if(c === 145 || c === 148 || c === 149) return { e: '🌫️', t: '霾' };
+    if([200,386,389,392,395].indexOf(c) > -1) return { e: '⛈️', t: '雷雨' };
+    if([179,323,326,329,332,335,338,368,371].indexOf(c) > -1) return { e: '🌨️', t: '雪' };
+    if([176,293,296,299,302,305,308,353,356,359].indexOf(c) > -1) return { e: '🌧️', t: '雨' };
+    if(d.indexOf('thunder') > -1) return { e: '⛈️', t: '雷雨' };
+    if(d.indexOf('snow') > -1 || d.indexOf('sleet') > -1) return { e: '🌨️', t: '雪' };
+    if(d.indexOf('rain') > -1 || d.indexOf('drizzle') > -1 || d.indexOf('shower') > -1) return { e: '🌧️', t: '雨' };
+    if(d.indexOf('fog') > -1 || d.indexOf('mist') > -1) return { e: '🌫️', t: '雾' };
+    if(d.indexOf('haze') > -1 || d.indexOf('smok') > -1 || d.indexOf('dust') > -1) return { e: '🌫️', t: '霾' };
+    if(d.indexOf('cloud') > -1 || d.indexOf('overcast') > -1) return { e: '☁️', t: '阴' };
+    if(d.indexOf('clear') > -1 || d.indexOf('sun') > -1) return { e: '☀️', t: '晴' };
+    return { e: '🌡️', t: '' };
+  }
+  function wxCacheGet(city){
+    try{
+      var raw = localStorage.getItem(WX_KEY);
+      if(!raw) return null;
+      var o = JSON.parse(raw);
+      if(!o || !o.at || !o.data || o.city !== city) return null;
+      if(Date.now() - o.at > 30 * 60 * 1000) return null;
+      return o;
+    }catch(e){ return null; }
+  }
+  function wxStatusText(){
+    if(!WX.data) return '还没取到天气';
+    var info = wxCodeInfo(WX.data.code, WX.data.desc);
+    return '当前：' + (WX.city || wxCity()) + ' ' + WX.data.temp + '°' + (info.t ? ' · ' + info.t : '') + ' · 体感 ' + WX.data.feel + '°';
+  }
+  function wxLoad(force){
+    var city = wxCity();
+    if(!force){
+      var c = wxCacheGet(city);
+      if(c){
+        WX = { data: c.data, at: c.at, city: city, err: false };
+        if($('#rail')) renderRail();
+        return;
+      }
+    }
+    if(!force && WX.city === city && WX.data) return;
+    var url = 'https://wttr.in/' + encodeURIComponent(city) + '?format=j1';
+    if(typeof fetch !== 'function'){ WX = { data: null, at: 0, city: city, err: true }; return; }
+    fetch(url).then(function(r){ return r.json(); }).then(function(j){
+      var cc = (j && j.current_condition && j.current_condition[0]) || null;
+      if(!cc) throw new Error('no data');
+      var area = city;
+      WX = { data: {
+        temp: Math.round(Number(cc.temp_C)),
+        feel: Math.round(Number(cc.FeelsLikeC)),
+        hum: Number(cc.humidity),
+        code: cc.weatherCode,
+        desc: (cc.weatherDesc && cc.weatherDesc[0] && cc.weatherDesc[0].value) || '',
+        area: area
+      }, at: Date.now(), city: city, err: false };
+      try{ localStorage.setItem(WX_KEY, JSON.stringify({ city: city, at: WX.at, data: WX.data })); }catch(e){}
+      if($('#rail')) renderRail();
+      var st = $('#wxStat'); if(st) st.textContent = wxStatusText();
+    }).catch(function(){
+      WX = { data: null, at: 0, city: city, err: true };
+      if($('#rail')) renderRail();
+      var st = $('#wxStat'); if(st) st.textContent = '没取到天气（网络不通或城市名不认识），右栏只显示时间';
+    });
+  }
+  function wxHTML(){
+    if(!WX.data) return '';
+    var info = wxCodeInfo(WX.data.code, WX.data.desc);
+    return '<div class="wx"><span class="wicon">' + info.e + '</span>' +
+      '<span class="wt">' + WX.data.temp + '°</span>' +
+      '<span class="warea">' + esc(WX.city || wxCity()) + (info.t ? ' · ' + info.t : '') + '</span>' +
+      '<span class="wf">体感 ' + WX.data.feel + '°</span></div>';
+  }
   function renderRail(){
     var rail = $('#rail');
     if(!rail) return;
@@ -859,7 +949,7 @@ button{font-family:inherit}
       '<div class="rail-card"><div class="clock">' +
         '<div class="t" id="railClock">' + c.hm + '</div>' +
         '<div class="d"><b>' + c.md + '</b>' + c.greet + '</div>' +
-      '</div></div>' +
+      '</div>' + wxHTML() + '</div>' +
       '<div class="rail-card"><p class="rlabel">今日</p><div class="trio">' +
         '<div><div class="n">' + done + '</div><div class="k">题</div></div>' +
         '<div><div class="n blue">' + (done ? todayRate + '%' : '—') + '</div><div class="k">正确率</div></div>' +
@@ -1333,6 +1423,13 @@ button{font-family:inherit}
         '</div>' +
       '</div>' +
       '<div class="card">' +
+        '<p class="eyebrow">天气城市</p>' +
+        '<p class="hint" style="margin-top:0;margin-bottom:12px">电脑端右栏时钟下面那一行天气用它。中文或拼音都行，留空按萍乡算。只把城市名发给 wttr.in，不发定位，也不上传别的数据。</p>' +
+        '<div class="airow"><label for="wxCity">城市</label>' +
+          '<input id="wxCity" type="text" placeholder="萍乡" value="' + esc(store.settings.city || '') + '" autocomplete="off" spellcheck="false"></div>' +
+        '<p class="aistat" id="wxStat">' + esc(wxStatusText()) + '</p>' +
+      '</div>' +
+      '<div class="card">' +
         '<p class="eyebrow">写作生成 · 用哪个接口</p>' +
         '<div class="seg">' +
           '<button data-act="aiMode" data-val="free" aria-pressed="' + (aiCfg().mode === 'free') + '">公共免费</button>' +
@@ -1386,6 +1483,21 @@ button{font-family:inherit}
       '</div>' +
       '<p class="note">练习记录（对错次数、错题标记、今日正确率）也一并保存在本机。导出的 json 里包含词条与记录，可以直接换设备继续用。</p>';
     bindAIInputs();
+    bindWxInput();
+  }
+
+  function bindWxInput(){
+    var el = $('#wxCity');
+    if(!el) return;
+    el.addEventListener('change', function(){
+      var v = el.value.trim();
+      if(v === String(store.settings.city || '')) return;
+      store.settings.city = v;
+      save();
+      WX = { data: null, at: 0, city: '', err: false };
+      wxLoad(true);
+      toast('天气城市已保存');
+    });
   }
 
   /* =========================================================
@@ -2649,14 +2761,22 @@ button{font-family:inherit}
     }catch(err){}
   }
 
+  function wxMaybe(){
+    try{
+      if(window.matchMedia && window.matchMedia('(min-width:1200px)').matches) wxLoad();
+    }catch(e){}
+  }
+
   todayLog();
   save();
   paintBrand();
   render();
+  wxMaybe();
   setInterval(function(){
     var el = $('#railClock');
     if(el) el.textContent = clockInfo().hm;
   }, 30000);
+  setInterval(wxMaybe, 30 * 60 * 1000);
 })();
 </script>
 </body>
