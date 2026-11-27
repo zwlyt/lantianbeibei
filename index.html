@@ -354,12 +354,21 @@ button{font-family:inherit}
   .clock .t{font-family:var(--serif);font-size:32px;line-height:1.1;letter-spacing:.5px}
   .clock .d{font-size:11.5px;color:var(--muted);text-align:right;line-height:1.6}
   .clock .d b{display:block;color:var(--ink);font-weight:600}
-  .wx{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid var(--line);
-    font-size:11.5px;color:var(--muted);flex-wrap:wrap}
-  .wx .wicon{font-size:15px;line-height:1}
-  .wx .wt{font-family:var(--serif);font-size:21px;line-height:1;color:var(--ink)}
-  .wx .warea{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:112px}
-  .wx .wf{margin-left:auto}
+  .wx{display:flex;align-items:center;gap:9px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--muted);flex-wrap:nowrap}
+  .wchip{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;
+    color:#66768A;background:#EEF2F8}
+  .wchip svg{width:22px;height:22px}
+  .wchip.sun{color:#D99A0B;background:#FDF3D6}
+  .wchip.partly{color:#C98A16;background:#FBF3E2}
+  .wchip.cloud{color:#66768A;background:#E6ECF5}
+  .wchip.fog{color:#61707F;background:#E3E9F2}
+  .wchip.rain{color:#2668B2;background:#E4EEFC}
+  .wchip.snow{color:#3F86C4;background:#E6F0FB}
+  .wchip.storm{color:#B8860B;background:#FBF1D6}
+  .wx .wt{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1;color:var(--ink);letter-spacing:.5px}
+  .wx .warea{color:var(--ink);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px}
+  .wx .wf{margin-left:auto;white-space:nowrap}
   .trio{display:flex;gap:8px}
   .trio > div{flex:1;min-width:0}
   .trio .n{font-family:var(--serif);font-size:24px;line-height:1.2;font-variant-numeric:tabular-nums}
@@ -851,22 +860,44 @@ button{font-family:inherit}
   }
   function wxCodeInfo(code, desc){
     var c = Number(code), d = String(desc || '').toLowerCase();
-    if(c === 113) return { e: '☀️', t: '晴' };
-    if(c === 116) return { e: '⛅', t: '多云' };
-    if(c === 119 || c === 122) return { e: '☁️', t: '阴' };
-    if(c === 143 || c === 248 || c === 260) return { e: '🌫️', t: '雾' };
-    if(c === 145 || c === 148 || c === 149) return { e: '🌫️', t: '霾' };
-    if([200,386,389,392,395].indexOf(c) > -1) return { e: '⛈️', t: '雷雨' };
-    if([179,323,326,329,332,335,338,368,371].indexOf(c) > -1) return { e: '🌨️', t: '雪' };
-    if([176,293,296,299,302,305,308,353,356,359].indexOf(c) > -1) return { e: '🌧️', t: '雨' };
-    if(d.indexOf('thunder') > -1) return { e: '⛈️', t: '雷雨' };
-    if(d.indexOf('snow') > -1 || d.indexOf('sleet') > -1) return { e: '🌨️', t: '雪' };
-    if(d.indexOf('rain') > -1 || d.indexOf('drizzle') > -1 || d.indexOf('shower') > -1) return { e: '🌧️', t: '雨' };
-    if(d.indexOf('fog') > -1 || d.indexOf('mist') > -1) return { e: '🌫️', t: '雾' };
-    if(d.indexOf('haze') > -1 || d.indexOf('smok') > -1 || d.indexOf('dust') > -1) return { e: '🌫️', t: '霾' };
-    if(d.indexOf('cloud') > -1 || d.indexOf('overcast') > -1) return { e: '☁️', t: '阴' };
-    if(d.indexOf('clear') > -1 || d.indexOf('sun') > -1) return { e: '☀️', t: '晴' };
-    return { e: '🌡️', t: '' };
+    if(c === 113) return { ic: 'sun', t: '晴' };
+    if(c === 116) return { ic: 'partly', t: '多云' };
+    if(c === 119 || c === 122) return { ic: 'cloud', t: '阴' };
+    if(c === 143 || c === 248 || c === 260) return { ic: 'fog', t: '雾' };
+    if(c === 145 || c === 148 || c === 149) return { ic: 'fog', t: '霾' };
+    if([200,386,389,392,395].indexOf(c) > -1) return { ic: 'storm', t: '雷雨' };
+    if([179,323,326,329,332,335,338,368,371].indexOf(c) > -1) return { ic: 'snow', t: '雪' };
+    if([176,293,296,299,302,305,308,353,356,359].indexOf(c) > -1) return { ic: 'rain', t: '雨' };
+    if(d.indexOf('thunder') > -1) return { ic: 'storm', t: '雷雨' };
+    if(d.indexOf('snow') > -1 || d.indexOf('sleet') > -1) return { ic: 'snow', t: '雪' };
+    if(d.indexOf('rain') > -1 || d.indexOf('drizzle') > -1 || d.indexOf('shower') > -1) return { ic: 'rain', t: '雨' };
+    if(d.indexOf('fog') > -1 || d.indexOf('mist') > -1) return { ic: 'fog', t: '雾' };
+    if(d.indexOf('haze') > -1 || d.indexOf('smok') > -1 || d.indexOf('dust') > -1) return { ic: 'fog', t: '霾' };
+    if(d.indexOf('cloud') > -1 || d.indexOf('overcast') > -1) return { ic: 'cloud', t: '阴' };
+    if(d.indexOf('clear') > -1 || d.indexOf('sun') > -1) return { ic: 'sun', t: '晴' };
+    return { ic: 'sun', t: '' };
+  }
+  function wxIcon(name){
+    var o = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
+    if(name === 'partly') return o +
+      '<circle cx="9.2" cy="8.4" r="3" /><path d="M9.2 3.2v1.2M4.4 8.4h1.2M6.2 5.4l.9.9M12.2 5.4l-.9.9"/>' +
+      '<path d="M7.9 18.6h9.4a3.2 3.2 0 0 0 .3-6.4 4.7 4.7 0 0 0-8.9-.7 2.6 2.6 0 0 0-.8 7.1z"/></svg>';
+    if(name === 'cloud') return o +
+      '<path d="M7.4 17.6h9.8a3.3 3.3 0 0 0 .3-6.6 4.8 4.8 0 0 0-9.1-.7 2.7 2.7 0 0 0-1 7.3z"/></svg>';
+    if(name === 'fog') return o +
+      '<path d="M5.2 8.8h13.6M4 12.6h16M6.8 16.4h10.4" stroke-width="2.3"/></svg>';
+    if(name === 'rain') return o +
+      '<path d="M7.2 13.6h9.4a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-.7 2.6 2.6 0 0 0-.9 7.1z"/>' +
+      '<path d="M9.4 16.6v3.4M13 16.6v3.4M16.6 16.6v3.4" stroke-width="2.3"/></svg>';
+    if(name === 'snow') return o +
+      '<path d="M7.2 13.6h9.4a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-.7 2.6 2.6 0 0 0-.9 7.1z"/>' +
+      '<circle cx="9.4" cy="18.4" r="1.5" fill="currentColor" stroke="none"/>' +
+      '<circle cx="13" cy="18.4" r="1.5" fill="currentColor" stroke="none"/>' +
+      '<circle cx="16.6" cy="18.4" r="1.5" fill="currentColor" stroke="none"/></svg>';
+    if(name === 'storm') return o +
+      '<path d="M7.2 13.2h9.4a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-.7 2.6 2.6 0 0 0-.9 7.1z"/>' +
+      '<path d="M12.6 15.2h2.4l-3.2 4.4h2.6"/></svg>';
+    return o + '<circle cx="12" cy="12" r="4.1"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.4 5.4l1.7 1.7M16.9 16.9l1.7 1.7M18.6 5.4l-1.7 1.7M7.1 16.9l-1.7 1.7"/></svg>';
   }
   function wxCacheGet(city){
     try{
@@ -920,7 +951,7 @@ button{font-family:inherit}
   function wxHTML(){
     if(!WX.data) return '';
     var info = wxCodeInfo(WX.data.code, WX.data.desc);
-    return '<div class="wx"><span class="wicon">' + info.e + '</span>' +
+    return '<div class="wx"><span class="wchip ' + info.ic + '">' + wxIcon(info.ic) + '</span>' +
       '<span class="wt">' + WX.data.temp + '°</span>' +
       '<span class="warea">' + esc(WX.city || wxCity()) + (info.t ? ' · ' + info.t : '') + '</span>' +
       '<span class="wf">体感 ' + WX.data.feel + '°</span></div>';
