@@ -360,6 +360,13 @@ button{font-family:inherit}
   .trio .n.blue{color:var(--blue-ink)}
   .trio .n.red{color:var(--wrong)}
   .trio .k{font-size:11px;color:var(--muted);margin-top:2px}
+  .hist{display:flex;align-items:flex-end;gap:5px;height:46px;margin-top:16px;
+    border-bottom:1px dashed var(--line)}
+  .hist i{flex:1;min-width:0;border-radius:4px 4px 0 0;background:var(--gold);transition:height .2s}
+  .hist i.e{background:#E7EDF6}
+  .hist-l{display:flex;gap:5px;margin-top:5px}
+  .hist-l span{flex:1;min-width:0;text-align:center;font-size:10px;color:var(--muted);letter-spacing:0}
+  .hist-note{font-size:10.5px;color:var(--muted);margin:9px 0 0;line-height:1.5}
   .duo{display:flex;gap:8px;margin-top:12px}
   .duo .k{font-size:11px;color:var(--muted)}
   .duo .n{font-size:13px;font-weight:600;margin-top:1px}
@@ -628,9 +635,29 @@ button{font-family:inherit}
   store.settings.ai = Object.assign({ mode: 'free', url: '', tok: '', model: '', key: '' }, store.settings.ai || {});
   store.log = Object.assign({ date: '', right: 0, wrong: 0 }, store.log || {});
   store.reads = Array.isArray(store.reads) ? store.reads : [];
+  store.hist = (store.hist && typeof store.hist === 'object' && !Array.isArray(store.hist)) ? store.hist : {};
+  /* 老数据迁移：当天已有记录但还没有历史表，补一条 */
+  if(store.log.date && (store.log.right || store.log.wrong) && !store.hist[store.log.date]){
+    store.hist[store.log.date] = { right: store.log.right || 0, wrong: store.log.wrong || 0 };
+  }
+  /* 历史表为准：当天若已有历史记录，用它覆盖 log，避免两边打架 */
+  var tkInit = todayKey();
+  if(store.hist[tkInit]){
+    store.log = { date: tkInit, right: store.hist[tkInit].right || 0, wrong: store.hist[tkInit].wrong || 0 };
+  }
 
   function save(){
-    try{ localStorage.setItem(KEY, JSON.stringify(store)); }
+    try{
+      if(store.log && store.log.date){
+        if(!store.hist) store.hist = {};
+        var hPrev = store.hist[store.log.date];
+        var nPrev = hPrev ? ((hPrev.right || 0) + (hPrev.wrong || 0)) : -1;
+        var nNow = (store.log.right || 0) + (store.log.wrong || 0);
+        /* 只增不减：避免某次初始化把当天已有的历史记录覆盖成 0 */
+        if(nNow >= nPrev) store.hist[store.log.date] = { right: store.log.right || 0, wrong: store.log.wrong || 0 };
+      }
+      localStorage.setItem(KEY, JSON.stringify(store));
+    }
     catch(err){ toast('保存失败：浏览器存储可能已满'); }
   }
   function todayKey(){
@@ -638,7 +665,14 @@ button{font-family:inherit}
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   }
   function todayLog(){
-    if(store.log.date !== todayKey()) store.log = { date: todayKey(), right: 0, wrong: 0 };
+    var k = todayKey();
+    var h = (store.hist && store.hist[k]) || null;
+    if(store.log.date !== k){
+      store.log = { date: k, right: h ? (h.right || 0) : 0, wrong: h ? (h.wrong || 0) : 0 };
+    } else if(h && ((h.right || 0) + (h.wrong || 0)) > ((store.log.right || 0) + (store.log.wrong || 0))){
+      store.log.right = h.right || 0;
+      store.log.wrong = h.wrong || 0;
+    }
     return store.log;
   }
 
@@ -763,14 +797,43 @@ button{font-family:inherit}
       }
     }
     var total = r + w;
+    var activeDays = 0;
+    for(var k2 in store.hist){
+      if(!store.hist.hasOwnProperty(k2)) continue;
+      var hh = store.hist[k2];
+      if(hh && ((hh.right || 0) + (hh.wrong || 0)) > 0) activeDays++;
+    }
+    if(!activeDays) activeDays = Object.keys(days).length;
     return {
       total: total,
       rate: total ? Math.round(r / total * 100) : 0,
       mastered: mastered,
       wrongN: wrongN,
       maxStreak: maxStreak,
-      dayN: Object.keys(days).length
+      dayN: activeDays
     };
+  }
+
+  /* 近 7 天：按每天真实记录的题数/正确率画柱，没有记录的就是浅色短柱 */
+  function weekStrip(){
+    var out = [], labs = [], days = [];
+    var wd = ['日','一','二','三','四','五','六'];
+    for(var i=6;i>=0;i--){
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var k = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      var h = (store.hist && store.hist[k]) || null;
+      var n = h ? ((h.right || 0) + (h.wrong || 0)) : 0;
+      var rate = n ? Math.round((h.right || 0) / n * 100) : 0;
+      days.push({ n: n, rate: rate, k: k, d: d });
+    }
+    days.forEach(function(x, i){
+      var hgt = x.n ? Math.max(10, x.rate) : 5;
+      out.push('<i class="' + (x.n ? '' : 'e') + '" style="height:' + hgt + '%" title="' +
+        (x.d.getMonth()+1) + '/' + x.d.getDate() + ' · ' + (x.n ? (x.n + ' 题 · 正确率 ' + x.rate + '%') : '没有答题记录') + '"></i>');
+      labs.push('<span>' + (i === 6 ? '今天' : '周' + wd[x.d.getDay()]) + '</span>');
+    });
+    return '<div class="hist">' + out.join('') + '</div><div class="hist-l">' + labs.join('') + '</div>' +
+      '<p class="hist-note">近 7 天正确率 · 柱高就是当天正确率，没有答题的日子是空柱</p>';
   }
   function renderRail(){
     var rail = $('#rail');
@@ -801,7 +864,7 @@ button{font-family:inherit}
         '<div><div class="n">' + done + '</div><div class="k">题</div></div>' +
         '<div><div class="n blue">' + (done ? todayRate + '%' : '—') + '</div><div class="k">正确率</div></div>' +
         '<div><div class="n red">' + l.wrong + '</div><div class="k">错题</div></div>' +
-      '</div></div>' +
+      '</div>' + weekStrip() + '</div>' +
       '<div class="rail-card"><p class="rlabel">全览</p>' +
         '<div class="trio">' +
           '<div><div class="n">' + store.entries.length + '</div><div class="k">词条</div></div>' +
