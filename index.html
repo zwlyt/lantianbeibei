@@ -356,17 +356,10 @@ button{font-family:inherit}
   .clock .d b{display:block;color:var(--ink);font-weight:600}
   .wx{display:flex;align-items:center;gap:9px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line);
     font-size:11.5px;color:var(--muted);flex-wrap:nowrap}
-  .wchip{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1px rgba(30,58,107,.06);
-    color:#66768A;background:#EEF2F8}
+  .wchip{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex:none;
+    background:#F3F7FD;box-shadow:inset 0 0 0 1px rgba(30,58,107,.07)}
   .wchip svg{width:26px;height:26px}
-  .wchip.sun{color:#D99A0B;background:#FDF3D6}
-  .wchip.partly{color:#C98A16;background:#FBF3E2}
-  .wchip.cloud{color:#66768A;background:#E6ECF5}
-  .wchip.fog{color:#3C4C5E;background:#DFE6F1}
-  .wchip.rain{color:#2668B2;background:#E4EEFC}
-  .wchip.snow{color:#3F86C4;background:#E6F0FB}
-  .wchip.storm{color:#B8860B;background:#FBF1D6}
-  .wx .wt{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1;color:var(--ink);letter-spacing:.5px}
+  .wx .wt{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1;color:var(--ink);letter-spacing:.5px;transition:color .3s}
   .wx .warea{color:var(--ink);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px}
   .wx .wf{margin-left:auto;white-space:nowrap}
   .trio{display:flex;gap:8px}
@@ -878,26 +871,48 @@ button{font-family:inherit}
     return { ic: 'sun', t: '' };
   }
   function wxIcon(name){
-    var o = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
+    var o = '<svg viewBox="0 0 24 24" fill="none" stroke-linejoin="round">';
     if(name === 'partly') return o +
-      '<circle cx="9.2" cy="8.4" r="3" /><path d="M9.2 3.2v1.2M4.4 8.4h1.2M6.2 5.4l.9.9M12.2 5.4l-.9.9"/>' +
-      '<path d="M7.9 18.6h9.4a3.2 3.2 0 0 0 .3-6.4 4.7 4.7 0 0 0-8.9-.7 2.6 2.6 0 0 0-.8 7.1z"/></svg>';
+      '<circle cx="7.8" cy="6.4" r="3.3" fill="#FFC640"/>' +
+      '<g stroke="#F5A623" stroke-width="1.9" stroke-linecap="round"><path d="M7.8 1.5v1.2M2.8 6.4h1.2M4.3 2.9l.9.9"/></g>' +
+      '<g transform="translate(2.2,3.1)"><path d="M7.7 18.7h9.6a3.1 3.1 0 0 0 .3-6.2 4.6 4.6 0 0 0-8.7-.6 2.5 2.5 0 0 0-1.2 6.8z" fill="#EEF4FB" stroke="#B4C6DA" stroke-width="1.4"/></g></svg>';
     if(name === 'cloud') return o +
-      '<path d="M7.4 17.6h9.8a3.3 3.3 0 0 0 .3-6.6 4.8 4.8 0 0 0-9.1-.7 2.7 2.7 0 0 0-1 7.3z"/></svg>';
-    if(name === 'fog') return o +
-      '<path d="M4.4 9.6c2.4-2.1 4.8 2.1 7.2 0s4.8 2.1 7.2 0M3.6 14.2c2.4-2.1 4.8 2.1 7.2 0s4.8 2.1 7.2 0M6.4 18.8c2.4-2.1 4.8 2.1 7.2 0" stroke-width="2.7"/></svg>';
+      '<path d="M7.4 17.4h9.8a3.3 3.3 0 0 0 .3-6.6 4.8 4.8 0 0 0-9.1-.7 2.7 2.7 0 0 0-1 7.3z" fill="#E2EAF4" stroke="#B4C6DA" stroke-width="1.5"/></svg>';
+    if(name === 'fog'){
+      var a = 'c2.4-2.1 4.8 2.1 7.2 0s4.8 2.1 7.2 0';
+      return o + '<g stroke-linecap="round">' +
+        '<path d="M4.4 9.6' + a + '" stroke="#8CA4BC" stroke-width="2.6"/>' +
+        '<path d="M3.6 14.2' + a + '" stroke="#A9BBCB" stroke-width="2.6"/>' +
+        '<path d="M6.4 18.8c2.4-2.1 4.8 2.1 7.2 0" stroke="#C4D1DE" stroke-width="2.6"/></g></svg>';
+    }
     if(name === 'rain') return o +
-      '<path d="M7.2 13.6h9.4a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-.7 2.6 2.6 0 0 0-.9 7.1z"/>' +
-      '<path d="M9.4 16.6v3.4M13 16.6v3.4M16.6 16.6v3.4" stroke-width="2.3"/></svg>';
+      '<path d="M7.2 13.4h9.4a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-.7 2.6 2.6 0 0 0-.9 7.1z" fill="#DCE9F7" stroke="#A9BFD9" stroke-width="1.5"/>' +
+      '<g fill="#3E86D0"><rect x="8.1" y="15.3" width="1.8" height="4.6" rx=".9"/>' +
+      '<rect x="11.1" y="15.3" width="1.8" height="4.6" rx=".9"/>' +
+      '<rect x="14.1" y="15.3" width="1.8" height="4.6" rx=".9"/></g></svg>';
     if(name === 'snow') return o +
-      '<path d="M7.2 13.6h9.4a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-.7 2.6 2.6 0 0 0-.9 7.1z"/>' +
-      '<circle cx="9.4" cy="18.4" r="1.5" fill="currentColor" stroke="none"/>' +
-      '<circle cx="13" cy="18.4" r="1.5" fill="currentColor" stroke="none"/>' +
-      '<circle cx="16.6" cy="18.4" r="1.5" fill="currentColor" stroke="none"/></svg>';
+      '<path d="M7.2 13.4h9.4a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-.7 2.6 2.6 0 0 0-.9 7.1z" fill="#E9F2FB" stroke="#B4C6DA" stroke-width="1.5"/>' +
+      '<g fill="#79B6E8"><circle cx="9" cy="17.2" r="1.7"/><circle cx="13" cy="19.4" r="1.7"/><circle cx="17" cy="17.2" r="1.7"/></g></svg>';
     if(name === 'storm') return o +
-      '<path d="M7.2 13.2h9.4a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-.7 2.6 2.6 0 0 0-.9 7.1z"/>' +
-      '<path d="M12.6 15.2h2.4l-3.2 4.4h2.6"/></svg>';
-    return o + '<circle cx="12" cy="12" r="4.1"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.4 5.4l1.7 1.7M16.9 16.9l1.7 1.7M18.6 5.4l-1.7 1.7M7.1 16.9l-1.7 1.7"/></svg>';
+      '<path d="M7.2 12.4h9.4a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-.7 2.6 2.6 0 0 0-.9 7.1z" fill="#C3D1E2" stroke="#95A8BE" stroke-width="1.5"/>' +
+      '<path d="M14.4 13.2L10.4 19.4h2.6l-1.8 4.1 5.8-6.4h-2.8z" fill="#F7B32B"/></svg>';
+    return o + '<circle cx="12" cy="12" r="4.9" fill="#FFC640"/>' +
+      '<g stroke="#F5A623" stroke-width="2.2" stroke-linecap="round"><path d="M12 2.3v2.7M12 19v2.7M2.3 12h2.7M19 12h2.7M5.2 5.2l1.9 1.9M16.9 16.9l1.9 1.9M18.8 5.2l-1.9 1.9M7.1 16.9l-1.9 1.9"/></g></svg>';
+  }
+  function tempColor(t, ic){
+    var v = Number(t) || 0;
+    /* 天气对体感的修正：雨雪雾更冷、晴天更暖，让颜色跟着天气走 */
+    if(ic === 'rain' || ic === 'snow' || ic === 'storm') v -= 3;
+    else if(ic === 'fog') v -= 2;
+    else if(ic === 'sun') v += 2;
+    if(v >= 33) return '#B4312A';
+    if(v >= 28) return '#C2571F';
+    if(v >= 24) return '#B8791F';
+    if(v >= 17) return '#1E3A6B';
+    if(v >= 10) return '#2A5F94';
+    if(v >= 3) return '#3776AD';
+    if(v >= 0) return '#4688C1';
+    return '#4E9AD4';
   }
   function wxCacheGet(city){
     try{
@@ -952,7 +967,7 @@ button{font-family:inherit}
     if(!WX.data) return '';
     var info = wxCodeInfo(WX.data.code, WX.data.desc);
     return '<div class="wx"><span class="wchip ' + info.ic + '">' + wxIcon(info.ic) + '</span>' +
-      '<span class="wt">' + WX.data.temp + '°</span>' +
+      '<span class="wt" style="color:'+tempColor(WX.data.temp, info.ic)+'">' + WX.data.temp + '°</span>' +
       '<span class="warea">' + esc(WX.city || wxCity()) + (info.t ? ' · ' + info.t : '') + '</span>' +
       '<span class="wf">体感 ' + WX.data.feel + '°</span></div>';
   }
